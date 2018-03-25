@@ -2,10 +2,11 @@ from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import os
 from collections import namedtuple
+from pyflipdot.pyflipdot import HanoverSign
 
 FONT_DIRECTORY = os.path.join(
     os.path.dirname(__file__),
-    './hanover_flipdot/fonts')
+    './fonts')
 TrueTypeFont = namedtuple('TrueTypeFont', ['path', 'points'])
 
 
@@ -74,7 +75,7 @@ class TextBuilder(object):
         size, (_, offset_y) = font.font.getsize(text)
 
         # Determine Text starting position
-        text_position = self.get_text_position(size, alignment)
+        text_position = self._get_text_position(size, alignment)
         text_position['y'] -= offset_y
 
         # Create a new image
@@ -90,7 +91,7 @@ class TextBuilder(object):
             font=font)
         return np.array(image)
 
-    def get_text_position(self, size: int, alignment: str):
+    def _get_text_position(self, size, alignment: str):
         """Determines the top-left position for the text sub-image
 
         Args:
@@ -126,3 +127,29 @@ class TextBuilder(object):
             raise ValueError("Invalid alignment '{}'".format(alignment))
 
         return text_position
+
+
+class TextSign(HanoverSign):
+    def __init__(
+            self,
+            name: str,
+            address: int,
+            width: int,
+            height: int,
+            flip: bool = False):
+        # Create the sign as usual
+        super().__init__(name, address, width, height, flip)
+        # Create a text builder for the sign
+        self.texter = TextBuilder(width, height)
+
+    def text_image(self, text: str, font: str, alignment='left'):
+        font_obj = self.get_font(font)
+        return self.texter.text_image(text, font_obj, alignment=alignment)
+
+    @staticmethod
+    def get_font(font: str):
+        # Get a font and its height
+        font_details = FONTS[font]
+        return ImageFont.truetype(
+            font_details.path,
+            int(font_details.points / 3 * 4))

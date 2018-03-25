@@ -15,6 +15,9 @@ requirements = [
     'Click>=6.0',
     'pillow',
     'darkskylib',
+    'geocoder',
+    'pyserial',
+    'cmdln',
     # 'RPi.GPIO',
 ]
 
