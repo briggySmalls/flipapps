@@ -15,7 +15,7 @@ ICON_SIZE = (7, 7)
 
 SUPPORTED_ICONS = {
     'clear-day': './images/sun.png',
-    # 'clear-night': './images/.png',
+    'clear-night': './images/sun.png',
     'rain': './images/rain.png',
     # 'snow': './images/.png',
     # 'sleet': './images/.png',

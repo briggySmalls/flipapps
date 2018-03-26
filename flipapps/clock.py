@@ -1,3 +1,6 @@
+# -*- coding: utf-8 -*-
+
+"""Simple clock application"""
 from datetime import datetime
 from threading import Timer
 
@@ -13,10 +16,10 @@ class PeriodicTimer(Timer):
 
 class Clock(object):
     def __init__(self):
-        self.now = datetime.now()
         self.timer = PeriodicTimer(1, self.print_time)
 
     def start(self, callback):
+        self.now = datetime.now()
         self.callback = callback
         self.timer.start()
 
