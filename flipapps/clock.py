@@ -16,15 +16,21 @@ class PeriodicTimer(Timer):
 
 class Clock(object):
     def __init__(self):
-        self.timer = PeriodicTimer(1, self.print_time)
+        self.timer = None
 
     def start(self, callback):
+        if self.timer is not None:
+            self.stop()
+
         self.now = datetime.now()
         self.callback = callback
+        self.timer = PeriodicTimer(1, self.print_time)
         self.timer.start()
 
     def stop(self):
-        self.timer.cancel()
+        if self.timer is not None:
+            self.timer.cancel()
+            self.timer = None
 
     def print_time(self):
         # Get the current time
