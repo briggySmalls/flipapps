@@ -53,6 +53,10 @@ class FlipApps(object):
         sign = self._get_sign(sign_name)
         self.clock.start(lambda time: self._draw_time(sign, time))
 
+    def test(self, sign_name=None):
+        sign = self._get_sign(sign_name)
+        self.controller.test_signs()
+
     def _draw_time(self, sign, time):
         time_image = sign.text_image(time, 'nintendo', alignment='centre')
         self.controller.draw_image(time_image, sign_name=sign.name)

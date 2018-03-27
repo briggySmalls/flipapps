@@ -54,6 +54,9 @@ class FlipdotShell(cmdln.Cmdln):
     def do_clock(self, subcmd, opts, sign_name: str = None):
         self.apps.show_clock(sign_name)
 
+    def do_test(self, subcmd, opts, sign_name: str = None):
+        self.apps.test(sign_name)
+
 
 parser = argparse.ArgumentParser(
     description='Start flipdot command line application')
