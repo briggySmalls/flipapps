@@ -14,10 +14,8 @@ class FlipApps(object):
         port = Serial(port=port_name)
         self.controller = HanoverController(port)
 
-        # Create the weather app
+        # Create apps
         self.weather = Weather()
-
-        # Create a clock
         self.clock = Clock()
 
     def add_sign(self, name: str, address: int, width: int, height: int):
@@ -30,13 +28,13 @@ class FlipApps(object):
             text: str,
             font: str='silkscreen',
             sign_name: str=None):
-        self.clock.stop()  # Stop the clock, if it is running
+        self._stop_apps()
         sign = self._get_sign(sign_name)
         text_image = sign.text_image(text, font)
         self.controller.draw_image(text_image, sign_name=sign.name)
 
     def show_weather(self, coordinates=None, sign_name: str=None):
-        self.clock.stop()  # Stop the clock, if it is running
+        self._stop_apps()
 
         # Get the sign and start making an image
         sign = self._get_sign(sign_name)
@@ -54,8 +52,10 @@ class FlipApps(object):
         self.clock.start(lambda time: self._draw_time(sign, time))
 
     def test(self, sign_name=None):
-        sign = self._get_sign(sign_name)
         self.controller.test_signs()
+
+    def _stop_apps(self):
+        self.clock.stop()
 
     def _draw_time(self, sign, time):
         time_image = sign.text_image(time, 'nintendo', alignment='centre')
