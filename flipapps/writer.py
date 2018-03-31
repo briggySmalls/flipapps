@@ -15,3 +15,4 @@ class Writer(App):
 
             text = self.draw_image(image)
             sleep(1)
+        sleep(10)

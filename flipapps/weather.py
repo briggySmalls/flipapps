@@ -4,6 +4,7 @@ import os
 from PIL import Image
 import numpy as np
 import math
+from time import sleep
 
 from flipapps.app import App
 
@@ -61,6 +62,8 @@ class Weather(App):
         # Create an image from the forecast
         image = self._forecast_image(forecast_data)
         self.draw_image(image)
+
+        sleep(10)
 
     def _forecast_image(self, data, hour_count=None):
         image = self.create_image()
