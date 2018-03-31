@@ -5,6 +5,8 @@ from PIL import Image
 import numpy as np
 import math
 
+from flipapps.app import App
+
 CURRENT_DIR = os.path.dirname(__file__)
 DARKSKY_KEY = os.environ['DARKSKY_KEY']
 DEFAULT_UNITS = 'uk2'
@@ -36,37 +38,13 @@ def get_icon(icon):
     return np.asarray(Image.open(icon_path))
 
 
-class Forecast(object):
-    def __init__(self, forecast):
-        self.forecast = forecast
-
-    def draw_hourly(self, image, hour_count=None):
-        (_, width) = image.shape
-        (icon_height, icon_width) = ICON_SIZE
-        if hour_count is None:
-            # Determine how many hours we can fit on the image
-            hour_count = math.floor(width / (icon_width + 2))
-
-        # Determine location of icons
-        icon_locs = np.linspace(0, width, hour_count + 2)
-
-        for hour_idx in range(0, hour_count):
-            # Get icon based off forecast
-            hour_forecast = self.forecast.hourly[hour_idx]
-            icon_array = get_icon(hour_forecast['icon'])
-
-            # Add icon to image
-            left = int(math.floor(icon_locs[hour_idx + 1] - icon_width / 2))
-            image[0:icon_height, left:left + icon_width] = icon_array
-
-
-class Weather(object):
-    def __init__(self):
+class Weather(App):
+    def _setup(self):
         # Get location based off IP
         geo_helper = geocoder.ip('me')
         self.location = geo_helper.latlng
 
-    def get_forecast(self, coordinates=None):
+    def _run(self, coordinates=None):
         # Default to using our current location
         if coordinates is None:
             coordinates = self.location
@@ -78,4 +56,31 @@ class Weather(object):
             units=DEFAULT_UNITS,
             exclude=','.join(DEFAULT_EXCLUDES))
 
-        return Forecast(forecast_data)
+        # Create an image from the forecast
+        image = self._forecast_image(forecast_data)
+        self.draw_image(image)
+
+    def _forecast_image(self, data, hour_count=None):
+        image = self.create_image()
+        (image_width, image_height) = image.shape
+        (icon_height, icon_width) = ICON_SIZE
+        assert image_height > icon_height
+
+        if hour_count is None:
+            # Determine how many hours we can fit on the image
+            hour_count = math.floor(image_width / (icon_width + 2))
+
+        # Determine location of icons
+        icon_locs = np.linspace(0, image_width, hour_count + 2)
+
+        # Draw icons along image
+        for hour_idx in range(0, hour_count):
+            # Get icon based off forecast
+            hour_forecast = data.hourly[hour_idx]
+            icon_array = get_icon(hour_forecast['icon'])
+
+            # Add icon to image
+            left = int(math.floor(icon_locs[hour_idx + 1] - icon_width / 2))
+            image[0:icon_height, left:left + icon_width] = icon_array
+
+        return image

@@ -58,13 +58,13 @@ class TextBuilder(object):
     def text_image(
             self,
             text: str,
-            font: ImageFont,
+            font_name: str,
             alignment='left'):
         """Creates an image from text
 
         Args:
             text (str): Text to convert to an image
-            font (ImageFont): Font to use to render the image
+            font_name (str): Font name to use to render the image
             alignment (str, optional): Alignment ('left', 'right' or 'centre')
 
         Returns:
@@ -72,24 +72,67 @@ class TextBuilder(object):
         """
 
         # Get some details about the font
-        size, (_, offset_y) = font.font.getsize(text)
+        font = self._get_font(font_name)
+        lines = self._get_lines(text)
 
-        # Determine Text starting position
-        text_position = self._get_text_position(size, alignment)
-        text_position['y'] -= offset_y
+        images = []
+        for line in lines:
+            size, (_, offset_y) = font.font.getsize(line)
 
-        # Create a new image
-        image = Image.new(mode='1', size=(self.width, self.height), color=0)
-        # Get a drawing context
-        draw = ImageDraw.Draw(image)
+            # Determine Text starting position
+            text_position = self._get_text_position(size, alignment)
+            text_position['y'] -= offset_y
 
-        # Draw text
-        draw.text(
-            (text_position['x'], text_position['y']),
-            text,
-            fill=1,
-            font=font)
-        return np.array(image)
+            # Create a new image
+            image = Image.new(
+                mode='1', size=(self.width, self.height), color=0)
+            # Get a drawing context
+            draw = ImageDraw.Draw(image)
+
+            # Draw text
+            draw.text(
+                (text_position['x'], text_position['y']),
+                line,
+                fill=1,
+                font=font)
+            images.append(np.array(image))
+
+        return images
+
+    def _get_lines(self, text, font):
+        (width, height), (_, _) = font.font.getsize(text)
+        if height > self.height:
+            raise RuntimeError("Font too tall for {}x{} image".format(
+                self.width, self.height))
+
+        if width <= self.width:
+            # All the text fits on one line
+            return [text]
+
+        def words_to_line(words):
+            return ' '.join(words)
+
+        lines = []
+        while text:
+            all_words = text.split()
+            query_line = ''
+            previous_line = None
+            for i, word in enumerate(all_words):
+                # Create a new line with 'i' words
+                query_line = words_to_line(all_words[:i])
+                (width, _), _ = font.font.getsize(query_line)
+
+                # Check if line is too long
+                if width > self.width:
+                    if previous_line is None:
+                        raise RuntimeError(
+                            "'{}' is too long to fit in image".format(word))
+                    # We have found the word that makes the line too long
+                    lines.append(previous_line)
+                    text = text[len(previous_line):]
+                    text.trim()
+                else:
+                    previous_line = query_line
 
     def _get_text_position(self, size, alignment: str):
         """Determines the top-left position for the text sub-image
@@ -106,7 +149,7 @@ class TextBuilder(object):
         """
         width, height = size
 
-        if (width > self.width) or (height > self.height):
+        if width > self.width:
             print((
                 "Warning: {}x{} text will be clipped "
                 "to fit on {}x{} image").format(
@@ -128,26 +171,8 @@ class TextBuilder(object):
 
         return text_position
 
-
-class TextSign(HanoverSign):
-    def __init__(
-            self,
-            name: str,
-            address: int,
-            width: int,
-            height: int,
-            flip: bool = False):
-        # Create the sign as usual
-        super().__init__(name, address, width, height, flip)
-        # Create a text builder for the sign
-        self.texter = TextBuilder(width, height)
-
-    def text_image(self, text: str, font: str, alignment='left'):
-        font_obj = self.get_font(font)
-        return self.texter.text_image(text, font_obj, alignment=alignment)
-
     @staticmethod
-    def get_font(font: str):
+    def _get_font(font: str):
         # Get a font and its height
         font_details = FONTS[font]
         return ImageFont.truetype(

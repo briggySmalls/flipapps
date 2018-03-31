@@ -2,42 +2,33 @@
 
 """Simple clock application"""
 from datetime import datetime
-from threading import Timer
+from flipapps.app import App
+from flipapps.text_builder import TextBuilder
+from time import sleep
 
 
-class PeriodicTimer(Timer):
-    def run(self):
-        while not self.finished.is_set():
-            self.finished.wait(self.interval)
-            self.function(*self.args, **self.kwargs)
+class Clock(App):
+    def _setup(self):
+        self.text_builder = TextBuilder(self.image_details.width, self.image_details.height)
 
-        self.finished.set()
+    def _run(self):
+        while not self.is_cancel_requested:
+            self._update_time()
+            sleep(1)
 
-
-class Clock(object):
-    def __init__(self):
-        self.timer = None
-
-    def start(self, callback):
-        if self.timer is not None:
-            self.stop()
-
-        self.now = datetime.now()
-        self.callback = callback
-        self.timer = PeriodicTimer(1, self.print_time)
-        self.timer.start()
-
-    def stop(self):
-        if self.timer is not None:
-            self.timer.cancel()
-            self.timer = None
-
-    def print_time(self):
+    def _update_time(self):
         # Get the current time
         now = datetime.now()
         if self.now == now:
             # We've drifted
             return
 
-        self.callback(now.strftime("%H:%M:%S"))
+        # Create an image using the time, and draw it
+        text = now.strftime("%H:%M:%S")
+        images = self.text_builder.text_image(
+            text, font_name='nintendo', alignment='centre')
+        assert len(images) == 1
+        self.draw_image(images[0])
+
+        # Update record of previously sent time
         self.now = now

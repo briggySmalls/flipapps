@@ -1,65 +1,69 @@
 # -*- coding: utf-8 -*-
 
 """Collection of applications for flipdot signs"""
-from flipapps.text_builder import TextSign
+from flipapps.app import App
 from pyflipdot.pyflipdot import HanoverController
 from serial import Serial
+import queue
+from time import sleep
+from threading import Thread, Event
 from flipapps.weather import Weather
 from flipapps.clock import Clock
+from flipapps.writer import Writer
+from collections import namedtuple
 
 
-class FlipApps(object):
-    def __init__(self, port_name: str):
-        # Create the controller
-        port = Serial(port=port_name)
-        self.controller = HanoverController(port)
+Request = namedtuple('Request', ['app_name', 'args', 'kwargs'])
 
-        # Create apps
-        self.weather = Weather()
-        self.clock = Clock()
 
-    def add_sign(self, name: str, address: int, width: int, height: int):
-        # Create and add the sign
-        sign = TextSign(name, int(address), int(width), int(height), flip=True)
-        self.controller.add_sign(sign)
+class AppManager(object):
+    def __init__(self, apps, idle_app_name=None):
+        # Initialise variables
+        self.apps = {app.name: app for app in apps}
+        self.requests = queue.Queue()
+        self.idle_app = self.apps[idle_app_name]
+        self.current_app = None
+        # Create application thread
+        self.is_cancel_requested = Event()
+        self.runner = Thread(target=self._run, args=self)
 
-    def write_text(
-            self,
-            text: str,
-            font: str='silkscreen',
-            sign_name: str=None):
-        self._stop_apps()
-        sign = self._get_sign(sign_name)
-        text_image = sign.text_image(text, font)
-        self.controller.draw_image(text_image, sign_name=sign.name)
+    def request(self, request):
+        # Try to put the request into the queue
+        try:
+            self.requests.put_nowait(request)
+            return True
+        except queue.Full:
+            return False
 
-    def show_weather(self, coordinates=None, sign_name: str=None):
-        self._stop_apps()
+    def start(self):
+        self.current_app = self.idle_app
+        self.runner.start()
 
-        # Get the sign and start making an image
-        sign = self._get_sign(sign_name)
-        image = sign.create_image()
+    def stop(self):
+        self.is_cancel_requested.set()
 
-        # Get a weather forecast, and draw an image from it
-        forecast = self.weather.get_forecast(coordinates)
-        forecast.draw_hourly(image)
+    def _run(self):
+        while not self.is_cancel_requested.is_set():
+            # Update the app if necessary
+            self._handle_request()
+            # Wait a bit
+            sleep(1)
 
-        # Send the image to the sign
-        self.controller.draw_image(image, sign_name=sign.name)
+    def _handle_request(self):
+        try:
+            # We have a new app request to handle
+            request = self.requests.get_nowait()
+        except queue.Empty:
+            if (self.current_app is None) or (not self.current_app.is_active):
+                # We are idle, so use the idle app
+                request = Request(self.idle_app.name, None, None)
+            else:
+                # If we are idle then there is no no app to start
+                return
 
-    def show_clock(self, sign_name: str=None):
-        sign = self._get_sign(sign_name)
-        self.clock.start(lambda time: self._draw_time(sign, time))
+        # Stop current app
+        self.current_app.stop()
 
-    def test(self, sign_name=None):
-        self.controller.test_signs()
-
-    def _stop_apps(self):
-        self.clock.stop()
-
-    def _draw_time(self, sign, time):
-        time_image = sign.text_image(time, 'nintendo', alignment='centre')
-        self.controller.draw_image(time_image, sign_name=sign.name)
-
-    def _get_sign(self, sign_name):
-        return self.controller.get_sign(sign_name)
+        # Start requested app
+        self.current_app = self.apps[request.app_name]
+        self.current_app.start(*request.args, **request.kwargs)
