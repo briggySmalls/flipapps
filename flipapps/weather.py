@@ -44,7 +44,9 @@ class Weather(App):
         geo_helper = geocoder.ip('me')
         self.location = geo_helper.latlng
 
-    def _run(self, coordinates=None):
+    def _run(self, *args, **kwargs):
+        print(kwargs)
+        coordinates = kwargs['coordinates']
         # Default to using our current location
         if coordinates is None:
             coordinates = self.location

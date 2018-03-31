@@ -7,8 +7,8 @@ class Writer(App):
     def _setup(self):
         self.text_builder = TextBuilder(*self.image_details)
 
-    def _run(self, text):
-        images = self.text_builder.text_image(text, font_name='silkscreen')
+    def _run(self, text, font):
+        images = self.text_builder.text_image(text, font_name=font)
         for _, image in enumerate(images):
             if self.is_cancel_requested:
                 return

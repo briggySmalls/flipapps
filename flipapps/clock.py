@@ -9,12 +9,14 @@ from time import sleep
 
 class Clock(App):
     def _setup(self):
+        self.now = 0
         self.text_builder = TextBuilder(self.image_details.width, self.image_details.height)
 
-    def _run(self):
+    def _run(self, *args, **kwargs):
         while not self.is_cancel_requested:
             self._update_time()
             sleep(1)
+        print("Clock dying...")
 
     def _update_time(self):
         # Get the current time

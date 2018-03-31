@@ -47,6 +47,7 @@ class FlipdotShell(cmdln.Cmdln):
             Writer(size, self._draw_image),
         ]
         self.apps = AppManager(apps, 'clock')
+        self.apps.start()
 
         # Do the usual Cmd instantiation
         super().__init__()
@@ -57,8 +58,8 @@ class FlipdotShell(cmdln.Cmdln):
             opts,
             text: str,
             font: str = 'silkscreen'):
-        self.apps.request(
-            Request('weather', kwargs={'text': text, 'font': font}))
+        assert self.apps.request(
+            Request('writer', text=text, font=font))
 
     def do_weather(
             self,
@@ -67,17 +68,20 @@ class FlipdotShell(cmdln.Cmdln):
             latitude: int = None,
             longitude: int = None):
         coordinates = (latitude, longitude) if latitude and longitude else None
-        self.apps.request(
-            Request('weather', kwargs={'coordinates': coordinates}))
+        assert self.apps.request(
+            Request('weather', coordinates=coordinates))
 
     def do_clock(self, subcmd, opts):
-        self.apps.request(Request('clock'))
+        assert self.apps.request(Request('clock'))
+
+    def do_stop(self, subcmd, opts):
+        self.apps.stop()
 
     def _draw_image(self, image: np.array):
         text_image = np.chararray(image.shape, unicode=True)
         text_image[image] = '#'
-        text_image[~image] = ' '
-        for row in image.iterrows():
+        text_image[~image] = '_'
+        for row in text_image:
             print("|{}|".format(''.join(list(row))))
 
     def _get_sign(self, sign_name: str):

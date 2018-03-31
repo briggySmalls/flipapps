@@ -2,7 +2,6 @@ from PIL import Image, ImageDraw, ImageFont
 import numpy as np
 import os
 from collections import namedtuple
-from pyflipdot.pyflipdot import HanoverSign
 
 FONT_DIRECTORY = os.path.join(
     os.path.dirname(__file__),
@@ -73,7 +72,7 @@ class TextBuilder(object):
 
         # Get some details about the font
         font = self._get_font(font_name)
-        lines = self._get_lines(text)
+        lines = self._get_lines(text, font)
 
         images = []
         for line in lines:
