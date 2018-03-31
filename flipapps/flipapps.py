@@ -42,10 +42,8 @@ class AppManager(object):
         self.current_app.stop()
         self.is_cancel_requested.set()
 
-
     def _run(self):
         while not self.is_cancel_requested.is_set():
-            print("Iterating...")
             # Update the app if necessary
             self._handle_request()
             # Wait a bit
