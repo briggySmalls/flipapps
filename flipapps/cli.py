@@ -27,7 +27,7 @@ class FlipdotShell(cmdln.Cmdln):
 
     def __init__(self, port_name: str):
         # Create the controller
-        port = Serial(port=port_name)
+        port = Serial(port=port_name, baudrate=BAUD_RATE)
         self.controller = HanoverController(port)
 
         # Create and add the sign
