@@ -4,7 +4,7 @@ import os
 from PIL import Image
 import numpy as np
 import math
-from time import sleep
+import asyncio
 
 from flipapps.app import App
 
@@ -45,7 +45,7 @@ class Weather(App):
         geo_helper = geocoder.ip('me')
         self.location = geo_helper.latlng
 
-    def _run(self, *args, **kwargs):
+    async def _run(self, *args, **kwargs):
         print(kwargs)
         coordinates = kwargs['coordinates']
         # Default to using our current location
@@ -63,7 +63,8 @@ class Weather(App):
         image = self._forecast_image(forecast_data)
         self.draw_image(image)
 
-        sleep(10)
+        # Ensure the results of the app are displayed for some time
+        asyncio.sleep(10)
 
     def _forecast_image(self, data, hour_count=None):
         image = self.create_image()

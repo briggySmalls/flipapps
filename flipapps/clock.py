@@ -4,7 +4,7 @@
 from datetime import datetime
 from flipapps.app import App
 from flipapps.text_builder import TextBuilder
-from time import sleep
+import asyncio
 
 
 class Clock(App):
@@ -12,11 +12,10 @@ class Clock(App):
         self.now = 0
         self.text_builder = TextBuilder(self.image_details.width, self.image_details.height)
 
-    def _run(self, *args, **kwargs):
-        while not self.is_cancel_requested:
+    async def _run(self, *args, **kwargs):
+        while True:
             self._update_time()
-            sleep(1)
-        print("Clock dying...")
+            await asyncio.sleep(1)
 
     def _update_time(self):
         # Get the current time

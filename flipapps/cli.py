@@ -78,7 +78,12 @@ class FlipdotShell(cmdln.Cmdln):
         self.apps.stop()
 
     def _draw_image(self, image: np.array):
-        self.controller.draw_image(image)
+        text_image = np.chararray(image.shape, unicode=True)
+        text_image[image] = '#'
+        text_image[~image] = '_'
+        for row in text_image:
+            print("|{}|".format(''.join(list(row))))
+
 
     def _get_sign(self, sign_name: str):
         return self.controller.get_sign(sign_name)
