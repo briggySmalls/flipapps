@@ -129,7 +129,7 @@ class TextBuilder(object):
                     # We have found the word that makes the line too long
                     lines.append(previous_line)
                     text = text[len(previous_line):]
-                    text.trim()
+                    text.strip()
                 else:
                     previous_line = query_line
 
