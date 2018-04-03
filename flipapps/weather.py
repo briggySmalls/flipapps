@@ -58,7 +58,6 @@ class Weather(App):
             exclude=','.join(DEFAULT_EXCLUDES))
 
         # Create an image from the forecast
-        print(forecast_data.hourly[0]['icon'])
         image = self._forecast_image(forecast_data)
         self.draw_image(image)
 
