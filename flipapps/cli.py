@@ -7,51 +7,20 @@ import argparse
 import time
 import asyncio
 
-from serial import Serial
-from pyflipdot.pyflipdot import HanoverController, HanoverSign
-import numpy as np
-
-from flipapps.clock import Clock
-from flipapps.weather import Weather
-from flipapps.writer import Writer
-from flipapps.flipapps import AppManager, Request
-from flipapps.app import ImageDetails
+from flipapps.flipapps import FlipApps, Sign
 
 ADDRESS = 1
 WIDTH = 84
 HEIGHT = 7
-MIN_DRAW_INTERVAL_S = 2
+MIN_WRITE_INTERVAL_S = 2
 
 
 class FlipdotShell(cmdln.Cmdln):
     intro = "Welcome to the flipdot shell"
     prompt = "(flipdot) "
 
-    def __init__(self, port_name: str):
-        # Create the controller
-        port = Serial(port=port_name)
-        self.controller = HanoverController(port)
-
-        # Create and add the sign
-        size = ImageDetails(width=WIDTH, height=HEIGHT)
-        sign = HanoverSign(
-            'dev',
-            address=int(ADDRESS),
-            width=int(WIDTH),
-            height=int(HEIGHT),
-            flip=True)
-        self.controller.add_sign(sign)
-
-        # Create the application
-        apps = [
-            Clock(size, self._draw_image),
-            Weather(size, self._draw_image),
-            Writer(size, self._draw_image),
-        ]
-        self.apps = AppManager(apps, 'clock')
-        self.last_draw_time = 0
-        self.apps.start()
-
+    def __init__(self, apps: FlipApps):
+        self.apps = apps
         # Do the usual Cmd instantiation
         super().__init__()
 
@@ -61,8 +30,7 @@ class FlipdotShell(cmdln.Cmdln):
             opts,
             text: str,
             font: str = 'silkscreen'):
-        self.apps.request(
-            Request('writer', text=text, font=font))
+        self.apps.text(text=text, font=font)
 
     def do_weather(
             self,
@@ -71,27 +39,10 @@ class FlipdotShell(cmdln.Cmdln):
             latitude: int = None,
             longitude: int = None):
         coordinates = (latitude, longitude) if latitude and longitude else None
-        self.apps.request(
-            Request('weather', coordinates=coordinates))
+        self.apps.weather(coordinates)
 
     def do_clock(self, subcmd, opts):
-        self.apps.request(Request('clock'))
-
-    def do_stop(self, subcmd, opts):
-        self.apps.stop()
-
-    async def _draw_image(self, image: np.array):
-        # Ensure we are able to draw
-        disparity = time.time() - self.last_draw_time
-        if disparity < MIN_DRAW_INTERVAL_S:
-            await asyncio.sleep(disparity)
-
-        # Draw the image and record the time
-        self.controller.draw_image(image)
-        self.last_draw_time = time.time()
-
-    def _get_sign(self, sign_name: str):
-        return self.controller.get_sign(sign_name)
+        self.apps.clock()
 
 
 parser = argparse.ArgumentParser(
@@ -102,7 +53,14 @@ parser.add_argument(
 
 def main():
     args = parser.parse_args()
-    FlipdotShell(args.port).cmdloop()
+    sign = Sign(
+        ADDRESS,
+        WIDTH,
+        HEIGHT,
+        flip=True,
+        min_write_inteval=MIN_WRITE_INTERVAL_S)
+    with FlipApps(args.port, sign) as apps:
+        FlipdotShell(apps).cmdloop()
 
 
 if __name__ == "__main__":

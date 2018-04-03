@@ -1,68 +1,89 @@
 # -*- coding: utf-8 -*-
 
-"""Collection of applications for flipdot signs"""
-from flipapps.app import App
+"""Collection of apps for use with a flipdot sign"""
+from collections import namedtuple
 import asyncio
-from threading import Thread, Event
+import time
+from serial import Serial
+
+import numpy as np
+from pyflipdot.pyflipdot import HanoverController, HanoverSign
+
+from flipapps.app_manager import AppManager, Request
+from flipapps.app import ImageDetails
+from flipapps.clock import Clock
+from flipapps.weather import Weather
+from flipapps.writer import Writer
+
+Sign = namedtuple(
+    'Sign',
+    ['address', 'width', 'height', 'flip', 'min_write_inteval']
+)
 
 
-class Request(object):
-    def __init__(self, app: str, *args, **kwargs):
-        self.app = app
-        self.args = args
-        self.kwargs = kwargs
+def _test_draw(image: np.array):
+    test_image = np.full(image.shape, ' ')
+    test_image[image] = '#'
+    for row in test_image:
+        print("|{}|".format(''.join(list(row))))
 
 
-class AppManager(object):
-    def __init__(self, apps, idle_app_name: str = None):
-        # Initialise variables
-        self.apps = {app.name: app for app in apps}
-        self.idle_app = self.apps[idle_app_name]
-        self.loop = None
-        # Create application thread
-        self.is_cancel_requested = Event()
-        self.runner = Thread(target=self._run, name="app-manager")
+class FlipApps(object):
+    def __init__(self, port_name: str, sign: Sign):
+        # Create a controller
+        self.port = Serial(port_name)
+        self.controller = HanoverController(self.port)
 
-    def request(self, request: Request):
-        self.loop.call_soon_threadsafe(self._change_app, request)
+        # Create a sign
+        self.sign = HanoverSign(
+            '1', sign.address, sign.width, sign.height, sign.flip)
+        self.controller.add_sign(self.sign)
+        self.min_write_inteval = sign.min_write_inteval
+
+        # Create some apps
+        size = ImageDetails(width=sign.width, height=sign.height)
+        apps = [
+            Clock(size, self._draw_image),
+            Weather(size, self._draw_image),
+            Writer(size, self._draw_image),
+        ]
+        self.app_manager = AppManager(apps, 'clock')
+
+        # Initialise some variables
+        self.last_draw_time = 0
+
+    def __enter__(self):
+        self.app_manager.__enter__()
+        return self
+
+    def __exit__(self, type, value, traceback):
+        self.app_manager.__exit__(type, value, traceback)
+        self.port.close()
 
     def start(self):
-        self.current_app_task = None
-        self.runner.start()
+        self.app_manager.start()
 
     def stop(self):
-        # Post an instruction for the loop to stop
-        # This will cause the loop thread to terminate too
-        self.loop.call_soon_threadsafe(self.loop.stop)
+        self.app_manager.stop()
+        self.port.close()
 
-    def _change_app(self, request: Request):
-        # Stop current app
-        if self._is_currently_running:
-            print("Stopping current app")
-            self.current_app_task.cancel()
+    def text(self, text, font='silkscreen'):
+        self.app_manager.request(
+            Request('writer', text=text, font=font))
 
-        # Start requested app
-        print("Starting app '{}'".format(request.app))
+    def clock(self):
+        self.app_manager.request(Request('clock'))
 
-        # Run the requested app
-        self.current_app_task = self.loop.create_task(
-            self.apps[request.app].run(*request.args, **request.kwargs))
+    def weather(self, coordinates=None):
+        self.app_manager.request(
+            Request('weather', coordinates=coordinates))
 
-    async def _run_idle_app(self):
-        while True:
-            if not self._is_currently_running:
-                self.current_app_task = self.loop.create_task(
-                    self.idle_app.run())
-            await asyncio.sleep(1)
+    async def _draw_image(self, image: np.array):
+        # Ensure we are able to draw
+        disparity = time.time() - self.last_draw_time
+        if disparity < self.min_write_inteval:
+            await asyncio.sleep(disparity)
 
-    def _run(self):
-        # Create an async event loop for our applications to run out of
-        self.loop = asyncio.new_event_loop()
-        asyncio.set_event_loop(self.loop)
-        self.loop.create_task(self._run_idle_app())
-        self.loop.run_forever()
-        self.loop.close()
-
-    @property
-    def _is_currently_running(self):
-        return self.current_app_task and not self.current_app_task.done()
+        # # Draw the image and record the time
+        self.controller.draw_image(image)
+        self.last_draw_time = time.time()
