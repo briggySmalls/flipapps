@@ -99,39 +99,50 @@ class TextBuilder(object):
         return images
 
     def _get_lines(self, text, font):
-        (width, height), (_, _) = font.font.getsize(text)
+        # Assert that the font is appropriate
+        (_, height), (_, _) = font.font.getsize(text)
         if height > self.height:
             raise RuntimeError("Font too tall for {}x{} image".format(
                 self.width, self.height))
 
-        if width <= self.width:
+        # Convert the text into multiple lines
+        lines = []
+        while text:
+            line, text = self._get_line(text, font, self.width)
+            lines.append(line)
+        return lines
+
+    @staticmethod
+    def _get_line(text, font, total_width):
+        # First check if text fits on one line
+        (width, _), (_, _) = font.font.getsize(text)
+        if width <= total_width:
             # All the text fits on one line
-            return [text]
+            return text.strip(), ""
 
         def words_to_line(words):
             return ' '.join(words)
 
-        lines = []
-        while text:
-            all_words = text.split()
-            query_line = ''
-            previous_line = None
-            for i, word in enumerate(all_words):
-                # Create a new line with 'i' words
-                query_line = words_to_line(all_words[:i])
-                (width, _), _ = font.font.getsize(query_line)
+        all_words = text.split()
+        previous_line = None
+        for i, word in enumerate(all_words):
+            # Create a new line with 'i' words
+            query_line = words_to_line(all_words[:i])
+            (width, _), _ = font.font.getsize(query_line)
 
-                # Check if line is too long
-                if width > self.width:
-                    if previous_line is None:
-                        raise RuntimeError(
-                            "'{}' is too long to fit in image".format(word))
-                    # We have found the word that makes the line too long
-                    lines.append(previous_line)
-                    text = text[len(previous_line):]
-                    text.trim()
-                else:
-                    previous_line = query_line
+            # Check if line is too long
+            if width > total_width:
+                if i == 0:
+                    raise RuntimeError(
+                        "'{}' is too long to fit in image".format(word))
+
+                # We have found the word that makes the line too long
+                text = text[len(previous_line):]
+                text.strip()
+                return previous_line, text
+
+            # Iterate
+            previous_line = query_line
 
     def _get_text_position(self, size, alignment: str):
         """Determines the top-left position for the text sub-image
