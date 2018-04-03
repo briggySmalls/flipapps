@@ -31,7 +31,6 @@ class AppManager(object):
         self.runner.start()
 
     def stop(self):
-        print("Stop called")
         # Post an instruction for the loop to stop
         # This will cause the loop thread to terminate too
         self.loop.call_soon_threadsafe(self.loop.stop)
@@ -44,14 +43,23 @@ class AppManager(object):
 
         # Start requested app
         print("Starting app '{}'".format(request.app))
-        # Schedule app's run function to call asynchronously
+
+        # Run the requested app
         self.current_app_task = self.loop.create_task(
             self.apps[request.app].run(*request.args, **request.kwargs))
+
+    async def _run_idle_app(self):
+        while True:
+            if not self._is_currently_running:
+                self.current_app_task = self.loop.create_task(
+                    self.idle_app.run())
+            await asyncio.sleep(1)
 
     def _run(self):
         # Create an async event loop for our applications to run out of
         self.loop = asyncio.new_event_loop()
         asyncio.set_event_loop(self.loop)
+        self.loop.create_task(self._run_idle_app())
         self.loop.run_forever()
         self.loop.close()
 

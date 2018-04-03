@@ -14,7 +14,7 @@ class Writer(App):
         # Display the images
         for _, image in enumerate(images):
             text = self.draw_image(image)
-            asyncio.sleep(1)
+            await asyncio.sleep(1)
 
         # Ensure the text is left for a bit
-        asyncio.sleep(10)
+        await asyncio.sleep(10)

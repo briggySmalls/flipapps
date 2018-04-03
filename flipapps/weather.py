@@ -36,6 +36,7 @@ def get_icon(icon):
         return None
 
     icon_path = os.path.join(CURRENT_DIR, SUPPORTED_ICONS[icon])
+    print(icon_path)
     return np.asarray(Image.open(icon_path))
 
 
@@ -46,7 +47,6 @@ class Weather(App):
         self.location = geo_helper.latlng
 
     async def run(self, *args, **kwargs):
-        print(kwargs)
         coordinates = kwargs['coordinates']
         # Default to using our current location
         if coordinates is None:
@@ -60,19 +60,22 @@ class Weather(App):
             exclude=','.join(DEFAULT_EXCLUDES))
 
         # Create an image from the forecast
+        print(forecast_data.hourly[0]['icon'])
         image = self._forecast_image(forecast_data)
         self.draw_image(image)
 
         # Ensure the results of the app are displayed for some time
-        asyncio.sleep(10)
+        await asyncio.sleep(10)
 
     def _forecast_image(self, data, hour_count=None):
         image = self.create_image()
-        (image_width, image_height) = image.shape
+        (image_height, image_width) = image.shape
         (icon_height, icon_width) = ICON_SIZE
-        assert image_height > icon_height
+        assert image_height >= icon_height
 
         if hour_count is None:
+            print(image_width)
+            print(icon_width)
             # Determine how many hours we can fit on the image
             hour_count = math.floor(image_width / (icon_width + 2))
 
