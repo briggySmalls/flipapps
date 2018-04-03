@@ -4,6 +4,8 @@
 import sys
 import cmdln
 import argparse
+import time
+import asyncio
 
 from serial import Serial
 from pyflipdot.pyflipdot import HanoverController, HanoverSign
@@ -18,6 +20,7 @@ from flipapps.app import ImageDetails
 ADDRESS = 1
 WIDTH = 84
 HEIGHT = 7
+MIN_DRAW_INTERVAL_S = 2
 
 
 class FlipdotShell(cmdln.Cmdln):
@@ -46,6 +49,7 @@ class FlipdotShell(cmdln.Cmdln):
             Writer(size, self._draw_image),
         ]
         self.apps = AppManager(apps, 'clock')
+        self.last_draw_time = 0
         self.apps.start()
 
         # Do the usual Cmd instantiation
@@ -76,8 +80,15 @@ class FlipdotShell(cmdln.Cmdln):
     def do_stop(self, subcmd, opts):
         self.apps.stop()
 
-    def _draw_image(self, image: np.array):
+    async def _draw_image(self, image: np.array):
+        # Ensure we are able to draw
+        disparity = time.time() - self.last_draw_time
+        if disparity < MIN_DRAW_INTERVAL_S:
+            await asyncio.sleep(disparity)
+
+        # Draw the image and record the time
         self.controller.draw_image(image)
+        self.last_draw_time = time.time()
 
     def _get_sign(self, sign_name: str):
         return self.controller.get_sign(sign_name)

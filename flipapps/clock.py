@@ -15,10 +15,10 @@ class Clock(App):
 
     async def run(self):
         while True:
-            self._update_time()
+            await self._update_time()
             await asyncio.sleep(1)
 
-    def _update_time(self):
+    async def _update_time(self):
         # Get the current time
         now = datetime.now()
         if self.now == now:
@@ -30,7 +30,7 @@ class Clock(App):
         images = self.text_builder.text_image(
             text, font_name='nintendo', alignment='centre')
         assert len(images) == 1
-        self.draw_image(images[0])
+        await self.draw_image(images[0])
 
         # Update record of previously sent time
         self.now = now

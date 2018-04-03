@@ -59,7 +59,7 @@ class Weather(App):
 
         # Create an image from the forecast
         image = self._forecast_image(forecast_data)
-        self.draw_image(image)
+        await self.draw_image(image)
 
         # Ensure the results of the app are displayed for some time
         await asyncio.sleep(10)

@@ -13,7 +13,7 @@ class Writer(App):
 
         # Display the images
         for _, image in enumerate(images):
-            text = self.draw_image(image)
+            await self.draw_image(image)
             await asyncio.sleep(5)
 
         # Ensure the text is left for a bit
