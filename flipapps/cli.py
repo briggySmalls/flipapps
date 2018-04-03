@@ -15,7 +15,6 @@ from flipapps.writer import Writer
 from flipapps.flipapps import AppManager, Request
 from flipapps.app import ImageDetails
 
-BAUD_RATE = 4800
 ADDRESS = 1
 WIDTH = 84
 HEIGHT = 7
@@ -27,7 +26,7 @@ class FlipdotShell(cmdln.Cmdln):
 
     def __init__(self, port_name: str):
         # Create the controller
-        port = Serial(port=port_name, baudrate=BAUD_RATE)
+        port = Serial(port=port_name)
         self.controller = HanoverController(port)
 
         # Create and add the sign
