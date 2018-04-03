@@ -7,8 +7,7 @@ class Writer(App):
     def _setup(self):
         self.text_builder = TextBuilder(*self.image_details)
 
-    async def _run(self, text, font):
-        print("Writing!")
+    async def run(self, text, font):
         # Convert the text to a series of images
         images = self.text_builder.text_image(text, font_name=font)
 

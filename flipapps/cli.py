@@ -58,7 +58,7 @@ class FlipdotShell(cmdln.Cmdln):
             opts,
             text: str,
             font: str = 'silkscreen'):
-        assert self.apps.request(
+        self.apps.request(
             Request('writer', text=text, font=font))
 
     def do_weather(
@@ -68,11 +68,11 @@ class FlipdotShell(cmdln.Cmdln):
             latitude: int = None,
             longitude: int = None):
         coordinates = (latitude, longitude) if latitude and longitude else None
-        assert self.apps.request(
+        self.apps.request(
             Request('weather', coordinates=coordinates))
 
     def do_clock(self, subcmd, opts):
-        assert self.apps.request(Request('clock'))
+        self.apps.request(Request('clock'))
 
     def do_stop(self, subcmd, opts):
         self.apps.stop()
@@ -83,7 +83,6 @@ class FlipdotShell(cmdln.Cmdln):
         text_image[~image] = '_'
         for row in text_image:
             print("|{}|".format(''.join(list(row))))
-
 
     def _get_sign(self, sign_name: str):
         return self.controller.get_sign(sign_name)

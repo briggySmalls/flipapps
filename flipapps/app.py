@@ -15,7 +15,7 @@ class App(object,):
     def _setup(self):
         pass
 
-    async def _run(self, *args, **kwargs):
+    async def run(self, *args, **kwargs):
         raise NotImplementedError()
 
     def create_image(self):

@@ -12,7 +12,7 @@ class Clock(App):
         self.now = 0
         self.text_builder = TextBuilder(self.image_details.width, self.image_details.height)
 
-    async def _run(self, *args, **kwargs):
+    async def run(self, *args, **kwargs):
         while True:
             self._update_time()
             await asyncio.sleep(1)
