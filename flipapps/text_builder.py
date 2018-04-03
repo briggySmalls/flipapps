@@ -115,10 +115,11 @@ class TextBuilder(object):
     @staticmethod
     def _get_line(text, font, total_width):
         # First check if text fits on one line
+        text = text.strip()
         (width, _), (_, _) = font.font.getsize(text)
         if width <= total_width:
             # All the text fits on one line
-            return text.strip(), ""
+            return text, ""
 
         def words_to_line(words):
             return ' '.join(words)
@@ -127,7 +128,7 @@ class TextBuilder(object):
         previous_line = None
         for i, word in enumerate(all_words):
             # Create a new line with 'i' words
-            query_line = words_to_line(all_words[:i])
+            query_line = words_to_line(all_words[:(i + 1)])
             (width, _), _ = font.font.getsize(query_line)
 
             # Check if line is too long
@@ -137,12 +138,13 @@ class TextBuilder(object):
                         "'{}' is too long to fit in image".format(word))
 
                 # We have found the word that makes the line too long
-                text = text[len(previous_line):]
-                text.strip()
+                text = text[len(previous_line):].strip()
                 return previous_line, text
 
             # Iterate
             previous_line = query_line
+
+        assert False
 
     def _get_text_position(self, size, alignment: str):
         """Determines the top-left position for the text sub-image
