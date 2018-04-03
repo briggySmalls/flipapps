@@ -36,7 +36,6 @@ def get_icon(icon):
         return None
 
     icon_path = os.path.join(CURRENT_DIR, SUPPORTED_ICONS[icon])
-    print(icon_path)
     return np.asarray(Image.open(icon_path))
 
 
@@ -74,8 +73,6 @@ class Weather(App):
         assert image_height >= icon_height
 
         if hour_count is None:
-            print(image_width)
-            print(icon_width)
             # Determine how many hours we can fit on the image
             hour_count = math.floor(image_width / (icon_width + 2))
 
