@@ -1,0 +1,135 @@
+{
+    "manifest": {
+        "displayName": "flipdot",
+        "invocationName": "flipdot",
+        "category": "PRODUCTIVITY"
+    },
+    "actions": [
+        {
+            "name": "com.briggysmalls.actions.show_message",
+            "availability": {
+                "deviceClasses": [
+                    {
+                        "assistantSdkDevice": {}
+                    }
+                ]
+            },
+            "intent": {
+                "name": "com.briggysmalls.intents.show_message",
+                "parameters": [
+                    {
+                        "name": "text",
+                        "type": "SchemaOrg_Text"
+                    }
+                ],
+                "trigger": {
+                    "queryPatterns": [
+                        "flip the message $SchemaOrg_Text:text"
+                    ]
+                }
+            },
+            "fulfillment": {
+                "staticFulfillment": {
+                    "templatedResponse": {
+                        "items": [
+                            {
+                                "simpleResponse": {
+                                    "textToSpeech": "Transcribing your message"
+                                }
+                            },
+                            {
+                                "deviceExecution": {
+                                    "command": "com.briggysmalls.commands.show_message",
+                                    "params": {
+                                        "message": "$text"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "name": "com.briggysmalls.actions.show_weather",
+            "availability": {
+                "deviceClasses": [
+                    {
+                        "assistantSdkDevice": {}
+                    }
+                ]
+            },
+            "intent": {
+                "name": "com.briggysmalls.intents.show_weather",
+                "parameters": [
+                    {
+                        "name": "location",
+                        "type": "SchemaOrg_Place"
+                    }
+                ],
+                "trigger": {
+                    "queryPatterns": [
+                        "flip the weather (in $SchemaOrg_Place:location)?"
+                    ]
+                }
+            },
+            "fulfillment": {
+                "staticFulfillment": {
+                    "templatedResponse": {
+                        "items": [
+                            {
+                                "simpleResponse": {
+                                    "textToSpeech": "Showing you the weather"
+                                }
+                            },
+                            {
+                                "deviceExecution": {
+                                    "command": "com.briggysmalls.commands.show_weather",
+                                    "params": {
+                                        "location": "$location"
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        },
+        {
+            "name": "com.briggysmalls.actions.show_clock",
+            "availability": {
+                "deviceClasses": [
+                    {
+                        "assistantSdkDevice": {}
+                    }
+                ]
+            },
+            "intent": {
+                "name": "com.briggysmalls.intents.show_clock",
+                "trigger": {
+                    "queryPatterns": [
+                        "Flip the time"
+                    ]
+                }
+            },
+            "fulfillment": {
+                "staticFulfillment": {
+                    "templatedResponse": {
+                        "items": [
+                            {
+                                "simpleResponse": {
+                                    "textToSpeech": "Showing you the time"
+                                }
+                            },
+                            {
+                                "deviceExecution": {
+                                    "command": "com.briggysmalls.commands.show_time"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ]
+}

@@ -1,0 +1,50 @@
+syntax = "proto3";
+
+package flipapps;
+
+import "google/protobuf/empty.proto";
+
+// The flipdot applications service
+service FlipApps {
+    // Display some text
+    rpc Text (TextRequest) returns (FlipAppResponse) {}
+
+    // Display the weather for a given location
+    rpc Weather (WeatherRequest) returns (FlipAppResponse) {}
+
+    // Display the time
+    rpc Clock (ClockRequest) returns (FlipAppResponse) {}
+
+    // Get the last image to be written to the display
+    rpc GetDisplay (google.protobuf.Empty) returns (DisplayResponse) {}
+}
+
+// Request for displaying text
+message TextRequest {
+    // Text to display
+    string text = 1;
+    // Font to use
+    string font = 2;
+}
+
+// Request for displaying weather
+message WeatherRequest {
+    // Latitude of location to show weather for
+    float latitude = 1;
+    // Longitude of location to show weather for
+    float longitude = 2;
+}
+
+// Request for displaying the time
+message ClockRequest {
+}
+
+// Response for application request
+message FlipAppResponse {
+}
+
+// Reponse for display image
+message DisplayResponse {
+    // Pixels last written to the display
+    repeated bool pixels = 1;
+}
