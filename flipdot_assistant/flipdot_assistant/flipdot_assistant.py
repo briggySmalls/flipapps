@@ -157,8 +157,6 @@ class FlipdotAssistant(object):
 @click.option(
     '--project_id',
     help='The project ID used to register device instances.')
-@click.option(
-    '--port', help='The USB port to connect to the sign over')
 @click.version_option()
 def main(credentials, device_model_id, project_id):
     with open(credentials, 'r') as credentials_file:
