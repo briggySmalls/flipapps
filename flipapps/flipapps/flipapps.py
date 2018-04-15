@@ -5,6 +5,7 @@ from collections import namedtuple
 from concurrent import futures
 import asyncio
 from serial import Serial
+import time
 
 import sys
 import click
@@ -88,17 +89,14 @@ class FlipApps(FlipAppsServicer):
         return flipapps_pb2.FlipAppResponse()
 
     async def _draw_image(self, image: np.array):
-        _test_draw(image)
+        # Ensure we are able to draw
+        disparity = time.time() - self.last_draw_time
+        if disparity < self.min_write_inteval:
+            await asyncio.sleep(disparity)
 
-    # async def _draw_image(self, image: np.array):
-    #     # Ensure we are able to draw
-    #     disparity = time.time() - self.last_draw_time
-    #     if disparity < self.min_write_inteval:
-    #         await asyncio.sleep(disparity)
-
-    #     # # Draw the image and record the time
-    #     self.controller.draw_image(image)
-    #     self.last_draw_time = time.time()
+        # # Draw the image and record the time
+        self.controller.draw_image(image)
+        self.last_draw_time = time.time()
 
 
 def serve(flipapps):
