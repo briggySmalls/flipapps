@@ -1,11 +1,14 @@
-from collections import namedtuple
+import attr
 import numpy as np
 
 
-ImageDetails = namedtuple('ImageDetails', ['width', 'height'])
+@attr.s(frozen=True)
+class ImageDetails(object):
+    width = attr.ib(type=int)
+    height = attr.ib(type=int)
 
 
-class App(object,):
+class App(object):
     def __init__(self, image_details: ImageDetails, draw_image):
         self.name = self.__class__.__name__.lower()
         self.image_details = image_details
