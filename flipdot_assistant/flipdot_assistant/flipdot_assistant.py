@@ -15,6 +15,7 @@ from google.assistant.library.event import EventType
 from geopy.geocoders import Nominatim
 
 from flipdot_assistant.client import FlipAppClient
+from flipdot_assistant.power import PowerManager
 
 # from flipdot_assistant.power import Power
 
@@ -46,6 +47,8 @@ class FlipdotAssistant(object):
 
         # Create a flipapps client
         self.client = FlipAppClient()
+        # Create a power manager
+        self.power = PowerManager(pin_sign=38, pin_lights=40)
 
     def __enter__(self):
         self.assistant.__enter__()
@@ -75,6 +78,11 @@ class FlipdotAssistant(object):
         text = params['message']
         self.client.show_text(text)
 
+    def power_lights(self, params):
+        action = params['lighting']
+        assert action == 'ON' or action == 'OFF'
+        self.power.lights(action == 'ON')
+
     def process_event(self, event, device_id):
         """Pretty prints events.
         Prints all events that occur with two spaces between each new
@@ -101,6 +109,8 @@ class FlipdotAssistant(object):
                     self.show_time(params)
                 elif command == "com.briggysmalls.commands.show_message":
                     self.show_text(params)
+                elif command == "com.briggysmalls.commands.power_lights":
+                    self.power_lights(params)
 
     @staticmethod
     def process_device_actions(event, device_id):

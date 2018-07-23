@@ -130,6 +130,61 @@
                     }
                 }
             }
+        },
+        {
+            "name": "com.briggysmalls.actions.power_lights",
+            "availability": {
+                "deviceClasses": [
+                    {
+                        "assistantSdkDevice": {}
+                    }
+                ]
+            },
+            "intent": {
+                "name": "com.briggysmalls.intents.power_lights",
+                "parameters": [
+                    {
+                        "name": "lighting",
+                        "type": "LightingOptions"
+                    }
+                ],
+                "trigger": {
+                    "queryPatterns": [
+                        "Turn lights $LightingOptions:lighting"
+                    ]
+                }
+            },
+            "fulfillment": {
+                "staticFulfillment": {
+                    "templatedResponse": {
+                        "items": [
+                            {
+                                "simpleResponse": {
+                                    "textToSpeech": "Turning lights $lighting"
+                                }
+                            },
+                            {
+                                "deviceExecution": {
+                                    "command": "com.briggysmalls.commands.power_lights"
+                                }
+                            }
+                        ]
+                    }
+                }
+            }
+        }
+    ],
+    "types": [
+        {
+            "name": "$LightingOptions",
+            "entities": [
+                {
+                    "key": "ON"
+                },
+                {
+                    "key": "OFF"
+                }
+            ]
         }
     ]
 }
