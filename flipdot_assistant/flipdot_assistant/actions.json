@@ -150,7 +150,7 @@
                 ],
                 "trigger": {
                     "queryPatterns": [
-                        "Turn lights $LightingOptions:lighting"
+                        "Turn flipdot $LightingOptions:lighting"
                     ]
                 }
             },
@@ -160,7 +160,7 @@
                         "items": [
                             {
                                 "simpleResponse": {
-                                    "textToSpeech": "Turning lights $lighting"
+                                    "textToSpeech": "Turning flip dot $lighting"
                                 }
                             },
                             {
