@@ -165,7 +165,10 @@
                             },
                             {
                                 "deviceExecution": {
-                                    "command": "com.briggysmalls.commands.power_lights"
+                                    "command": "com.briggysmalls.commands.power_lights",
+                                    "params": {
+                                        "lighting": "$lighting"
+                                    }
                                 }
                             }
                         ]
@@ -179,10 +182,16 @@
             "name": "$LightingOptions",
             "entities": [
                 {
-                    "key": "ON"
+                    "key": "ON",
+                    "synonyms": [
+                        "on"
+                    ]
                 },
                 {
-                    "key": "OFF"
+                    "key": "OFF",
+                    "synonyms": [
+                        "off"
+                    ]
                 }
             ]
         }
