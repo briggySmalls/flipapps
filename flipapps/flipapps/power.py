@@ -27,4 +27,4 @@ class PowerManager(object):
 
     @staticmethod
     def _write_pin(pin: int, status: bool):
-        GPIO.output(pin, 1 if status else 0)
+        GPIO.output(pin, not status)
