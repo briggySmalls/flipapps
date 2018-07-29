@@ -1,7 +1,7 @@
 import grpc
 
-from protos.flipapps_pb2_grpc import FlipAppsStub
-from protos.flipapps_pb2 import (
+from flipapps_cli.protos.flipapps_pb2_grpc import FlipAppsStub
+from flipapps_cli.protos.flipapps_pb2 import (
     TextRequest, ClockRequest, WeatherRequest, LightRequest)
 
 
