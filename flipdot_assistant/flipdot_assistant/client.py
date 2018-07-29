@@ -1,8 +1,8 @@
 import grpc
 
-from flipdot_assistant.protos.flipapps_pb2_grpc import FlipAppsStub
-from flipdot_assistant.protos.flipapps_pb2 import (
-    TextRequest, ClockRequest, WeatherRequest)
+from protos.flipapps_pb2_grpc import FlipAppsStub
+from protos.flipapps_pb2 import (
+    TextRequest, ClockRequest, WeatherRequest, LightRequest)
 
 
 class FlipAppClient(object):
