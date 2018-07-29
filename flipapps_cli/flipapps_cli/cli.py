@@ -42,9 +42,9 @@ def weather(client, coordinates):
 @main.command()
 @click.option('--on/--off')
 @click.pass_obj
-def lights(client, status):
+def lights(client, on):
     """Turn lights on/off"""
-    client.power_lights(status)
+    client.power_lights(on)
 
 
 if __name__ == "__main__":
