@@ -11,15 +11,11 @@ with open('README.rst') as readme_file:
 with open('HISTORY.rst') as history_file:
     history = history_file.read()
 
-requirements = [
-    # 'RPi.GPIO',
-    'google-assistant-library',
-    'geopy'
-]
+requirements = ['Click>=6.0', 'grpc']
 
-setup_requirements = ['pytest-runner', ]
+setup_requirements = [ ]
 
-test_requirements = ['pytest', ]
+test_requirements = [ ]
 
 setup(
     author="Sam Briggs",
@@ -35,24 +31,25 @@ setup(
         'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
+        'Programming Language :: Python :: 3.7',
     ],
-    description="Smart Hanover flipdot signs powered by google assistant",
+    description="CLI for debugging the Flipapps server",
     entry_points={
         'console_scripts': [
-            'flipdot_assistant=flipdot_assistant.cli:main',
+            'flipapps_cli=flipapps_cli.cli:main',
         ],
     },
     install_requires=requirements,
     license="MIT license",
     long_description=readme + '\n\n' + history,
     include_package_data=True,
-    keywords='flipdot_assistant',
-    name='flipdot_assistant',
-    packages=find_packages(include=['flipdot_assistant']),
+    keywords='flipapps_cli',
+    name='flipapps_cli',
+    packages=find_packages(include=['flipapps_cli']),
     setup_requires=setup_requirements,
     test_suite='tests',
     tests_require=test_requirements,
-    url='https://github.com/briggySmalls/flipdot_assistant',
+    url='https://github.com/briggySmalls/flipapps_cli',
     version='0.1.0',
     zip_safe=False,
 )
