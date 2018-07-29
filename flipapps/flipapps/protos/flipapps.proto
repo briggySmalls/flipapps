@@ -15,6 +15,9 @@ service FlipApps {
     // Display the time
     rpc Clock (ClockRequest) returns (FlipAppResponse) {}
 
+    // Turn the lights on/off
+    rpc Light (LightRequest) returns (FlipAppResponse) {}
+
     // Get the last image to be written to the display
     rpc GetDisplay (google.protobuf.Empty) returns (DisplayResponse) {}
 }
@@ -37,6 +40,12 @@ message WeatherRequest {
 
 // Request for displaying the time
 message ClockRequest {
+}
+
+// Request for turning the lights on/off
+message LightRequest {
+    // Light states (True for on, False for off)
+    bool status = 1;
 }
 
 // Response for application request

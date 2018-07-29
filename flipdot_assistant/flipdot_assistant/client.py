@@ -20,3 +20,6 @@ class FlipAppClient(object):
         self.stub.Weather(WeatherRequest(
             latitude=coordinates[0],
             longitude=coordinates[1]))
+
+    def power_lights(self, on: bool):
+        self.stub.Light(LightRequest(status=on))

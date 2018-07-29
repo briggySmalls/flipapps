@@ -21,12 +21,17 @@ from flipapps.app import ImageDetails
 from flipapps.clock import Clock
 from flipapps.weather import Weather
 from flipapps.writer import Writer
+from flipapps.power import PowerManager
 
 
 ADDRESS = 1
 WIDTH = 84
 HEIGHT = 7
 MIN_WRITE_INTERVAL_S = 2
+PINS = {
+    'sign': 38,
+    'light': 40,
+}
 
 Sign = namedtuple(
     'Sign',
@@ -62,13 +67,21 @@ class FlipApps(FlipAppsServicer):
         ]
         self.app_manager = AppManager(apps, loop, 'clock')
 
+        # Create a power manager
+        self.power_manager = PowerManager(pins=PINS)
+
         # Initialise some variables
         self.last_draw_time = 0
 
     def __enter__(self):
+        # Turn on the sign
+        self.power_manager.sign(True)
         return self
 
-    def __exit__(self, type, value, traceback):
+    def __exit__(self, *args, **kwargs):
+        # Turn off the sign
+        self.power_manager.sign(False)
+        self.power_manager.__exit__(*args, **kwargs)
         self.port.close()
 
     def stop(self):
@@ -77,15 +90,23 @@ class FlipApps(FlipAppsServicer):
     def Text(self, request, context):
         self.app_manager.request(
             Request('writer', text=request.text, font=request.font))
-        return flipapps_pb2.FlipAppResponse()
+        return self._response()
 
     def Clock(self, request, context):
         self.app_manager.request(Request('clock'))
-        return flipapps_pb2.FlipAppResponse()
+        return self._response()
 
     def Weather(self, request, context):
         self.app_manager.request(Request(
             'weather', coordinates=(request.latitude, request.longitude)))
+        return self._response()
+
+    def Light(self, request, context):
+        del context  # Unused paramter
+        self.power_manager.light(request.status)
+        return self._response()
+
+    def _response(self):
         return flipapps_pb2.FlipAppResponse()
 
     async def _draw_image(self, image: np.array):

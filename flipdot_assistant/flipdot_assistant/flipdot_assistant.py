@@ -15,7 +15,6 @@ from google.assistant.library.event import EventType
 from geopy.geocoders import Nominatim
 
 from flipdot_assistant.client import FlipAppClient
-from flipdot_assistant.power import PowerManager
 
 # from flipdot_assistant.power import Power
 
@@ -47,8 +46,6 @@ class FlipdotAssistant(object):
 
         # Create a flipapps client
         self.client = FlipAppClient()
-        # Create a power manager
-        self.power = PowerManager(pin_sign=38, pin_lights=40)
 
     def __enter__(self):
         self.assistant.__enter__()
@@ -81,7 +78,8 @@ class FlipdotAssistant(object):
     def power_lights(self, params):
         action = params['lighting']
         assert action == 'ON' or action == 'OFF'
-        self.power.lights(action == 'ON')
+        is_on = action == 'ON'
+        self.client.power_lights(on=is_on)
 
     def process_event(self, event, device_id):
         """Pretty prints events.
