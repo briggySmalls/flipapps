@@ -1,8 +1,7 @@
 GRPC_BINDINGS = \
 	flipapps/flipapps/protos/flipapps.proto \
-	flipdot_assistant/flipdot_assistant/protos/flipapps.proto
-
-TEST = $(call proto_source, $(firstword $(GRPC_BINDINGS)))
+	flipapps_cli/flipapps_cli/protos/flipapps.proto \
+	flipdot_assistant/flipdot_assistant/protos/flipapps.proto \
 
 # Generate gRPC bindings for projects
 grpc-bindings: $(GRPC_BINDINGS)
